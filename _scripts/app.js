@@ -14,6 +14,7 @@ const parksFallback = {
     "description": "Alcatraz reveals stories of American incarceration, justice, and our common humanity. This small island was once a fort, a military prison, and a maximum security federal penitentiary. In 1969, the Indians of All Tribes occupied Alcatraz for 19 months in the name of freedom and Native American civil rights. We invite you to explore Alcatraz's complex history and natural beauty.",
 };
 
+/*Selecting elements from the DOM */
 const addressField = document.querySelector('#address');
 const cityField = document.querySelector('#city');
 const stateField = document.querySelector('#state');
@@ -23,6 +24,7 @@ const parkSection = document.querySelector('#specials');
 const parkName = document.querySelector('#specials h2 a');
 const parkDesc = document.querySelector('#specials p');
 
+/*Display the zipcode if the request is successful */
 const smartyUpdateUISuccess = function(parsedData) {
     // const parsedData = JSON.parse(data);
     // console.log(parsedData);
@@ -32,11 +34,14 @@ const smartyUpdateUISuccess = function(parsedData) {
     zipField.value = zip + '-' + plus4;
 };
 
+/*Display the error if the request failed */
 const smartyUpdateUIError = function(error) {
     console.log(error);
 };
 
+/*Display the park information if the request is successful */
 const parkUpdateUISuccess = function(parsedData){
+    // console.log(data);
     // const parsedData = JSON.parse(data);
     console.log(parsedData);
     const number = Math.floor(Math.random() * parsedData.data.length);
@@ -49,8 +54,10 @@ const parkUpdateUISuccess = function(parsedData){
 
 }
 
+/*Display the error if the request failed.
+Display the fall back parks information */
 const parkUpdateUIError = function(error) {
-    console.log(error);
+    // console.log(error);
     parkName.textContent = parksFallback.fullName;
     parkName.href = parksFallback.url;
     parkDesc.textContent = parksFallback.description;
@@ -59,32 +66,37 @@ const parkUpdateUIError = function(error) {
 };
 
 // const responseMethod = function(httpRequest,succeed,fail) {
-//     if(httpRequest.readyState === 4) {
+//     if(httpRequest.readyState === httpRequest.DONE) {
 //         if(httpRequest.status === 200) {
 //             succeed(httpRequest.responseText);
 //         }else {
 //             fail(httpRequest.status + ': ' + httpRequest.responseText);
 //         }
 //     }
-// }
+// };
 
 // const createRequest = function(url,succeed,fail){
 //     const httpRequest = new XMLHttpRequest(url);
 //     httpRequest.open('GET',url);
-//     httpRequest.send();
 //     httpRequest.addEventListener('readystatechange',(url) => {
 //         responseMethod(httpRequest,succeed,fail);
 //     });
+//     httpRequest.send();
 // };
 
+/*Check the returned request to see if there is an errors.
+Return an error if there is one else return an object containing all the neccessary data*/
 const handleErrors = function(response) {
     if(!response.ok) {
         throw new Error((response.status + ': ' + response.statusText));
     }
-    return response.json();
+    return response.json(); // will parse the json string into an object
 }
 
-
+/* Fetch request from the provided url. 
+Check to see if there is an error with the request.
+Process the object to display data.
+Perform error handling*/
 const createRequest = function(url,succeed,fail,init) {
     fetch(url,init)
         .then((response) => handleErrors(response))
@@ -92,6 +104,7 @@ const createRequest = function(url,succeed,fail,init) {
         .catch((error) => fail(error));
 };
 
+/* Checks if the value of address,city, and state are empty then proceed to build the url for smarty request*/
 const checkCompletion = function(){
     if( addressField.value !== '' && 
         cityField.value !== '' && 
@@ -103,12 +116,18 @@ const checkCompletion = function(){
             createRequest(requestUrl,smartyUpdateUISuccess,smartyUpdateUIError,smartyInit);
         }
 }
+
 // createRequest(smartyUrl);
 // createRequest(parksUrl,parkUpdateUISuccess,parkUpdateUIError);
 
+/*Event listener that run once user tab out of the address field, city field, or state field.
+Each listener call the checkCompletion() to input the need data so a custom url can be build for data requesting*/
 addressField.addEventListener('blur',checkCompletion);
 cityField.addEventListener('blur',checkCompletion);
 stateField.addEventListener('blur',checkCompletion);
+
+/*Event listener that will run once the page has finished loading.
+Call the createRequest() to create a request and retrive datas*/
 window.addEventListener('DOMContentLoaded',() => {
     createRequest(parksUrl,parkUpdateUISuccess,parkUpdateUIError);
 });
